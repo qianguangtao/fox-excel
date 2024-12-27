@@ -62,7 +62,7 @@ public class PersonDTO {
 注意：
 
 - getDataClazz()返回DTO的类全路径作为ExcelDataHandlerFactory工厂类的key。
-- checkData(T t)自己实现数据校验，内置了validateData(T t)基于javax.validation注解的校验
+- checkData(T t, ExcelImporter importer)自己实现数据校验，内置了validateData(T t)基于javax.validation注解的校验
 
 
 
