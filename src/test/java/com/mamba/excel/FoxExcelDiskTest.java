@@ -52,7 +52,7 @@ public class FoxExcelDiskTest {
         PersonDTO person1 = new PersonDTO();
         person1.setName("张三");
         person1.setAge(18);
-        person1.setAddress("北京北京北京北京北京北京北京北京北京北京北京北京北京北京北京北京北京北京北京北京");
+        person1.setAddress("北京市海淀区颐和园路5号");
         person1.setStaffCode("001");
         person1.setType("A");
         person1.setBirthday(new Date());
@@ -64,7 +64,7 @@ public class FoxExcelDiskTest {
         PersonDTO person2 = new PersonDTO();
         person2.setName("李四");
         person2.setAge(19);
-        person2.setAddress("上海上海上海上海上海上海上海上海上海上海上海");
+        person2.setAddress("上海市杨浦区邯郸路220号");
         person2.setStaffCode("002");
         person2.setBirthday(new Date());
         person2.setJoinDay(new Date());
@@ -79,7 +79,7 @@ public class FoxExcelDiskTest {
         PersonDTO person1 = new PersonDTO();
         person1.setName("张三");
         person1.setAge(188);
-        person1.setAddress("北京北京北京北京北京北京北京北京北京北京北京北京北京北京北京北京北京北京北京北京");
+        person1.setAddress("北京市海淀区颐和园路5号");
         person1.setStaffCode("001");
         person1.setType("A");
         person1.setBirthday(new Date());
@@ -91,7 +91,7 @@ public class FoxExcelDiskTest {
         PersonDTO person2 = new PersonDTO();
         person2.setName("李四");
         person2.setAge(19);
-        person2.setAddress("上海上海上海上海上海上海上海上海上海上海上海");
+        person2.setAddress("上海市杨浦区邯郸路220号");
         person2.setStaffCode("002");
         person2.setBirthday(new Date());
         person2.setJoinDay(new Date());
@@ -104,7 +104,7 @@ public class FoxExcelDiskTest {
 
     public static List<PositionDTO> getPositionList() {
         PositionDTO position1 = new PositionDTO();
-        position1.setName("开发工程师开发工程师开发工程师");
+        position1.setName("开发工程师");
         position1.setStaffCode("001");
         PositionDTO position2 = new PositionDTO();
         position2.setName("测试工程师");
@@ -114,7 +114,7 @@ public class FoxExcelDiskTest {
 
     public static List<PositionDTO> getErrorPositionList() {
         PositionDTO position1 = new PositionDTO();
-        position1.setName("开发工程师开发工程师开发工程师");
+        position1.setName("开发工程师");
         position1.setStaffCode("");
         PositionDTO position2 = new PositionDTO();
         position2.setName("测试工程师");
