@@ -10,7 +10,7 @@ Feature:
 
 ## UML类图
 
-![](doc/foxexcel uml类图.png)
+![](doc/uml.png)
 
 # 使用
 
