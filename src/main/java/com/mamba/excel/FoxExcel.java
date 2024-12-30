@@ -52,7 +52,7 @@ public class FoxExcel {
      * @param sheetDefinition Sheet定义类数组，用于指定每个Sheet的类定义
      */
     public static void read(MultipartFile file, HttpServletResponse response, String errorExcelName,
-        Class... sheetDefinition) {
+                            Class... sheetDefinition) {
         read(file, response, errorExcelName, DEFAULT_SUCCESS, sheetDefinition);
     }
 
@@ -66,11 +66,11 @@ public class FoxExcel {
      * @param sheetDefinition Sheet定义类数组，用于指定每个Sheet的类定义
      */
     public static void read(MultipartFile file, HttpServletResponse response, String errorExcelName, Supplier success,
-        Class... sheetDefinition) {
+                            Class... sheetDefinition) {
         Assert.notEmpty(sheetDefinition);
         ExcelImporter importer = new ExcelImporter(file);
         importer.importData(Arrays.asList(sheetDefinition), response,
-            StrUtil.blankToDefault(errorExcelName, "异常-" + file.getOriginalFilename()), success);
+                StrUtil.blankToDefault(errorExcelName, "异常-" + file.getOriginalFilename()), success);
     }
 
     /**
@@ -96,17 +96,32 @@ public class FoxExcel {
      * 将数据写入Excel文件并返回HttpServletResponse。
      *
      * @param fileName Excel文件的名称
-     * @param excelSheetDataPairs 包含Sheet定义类和数据列表的Pair对象数组，用于指定每个Sheet的数据内容
+     * @param response HttpServletResponse对象，用于将生成的Excel文件作为响应发送给客户端
+     * @param excelSheetDataPairs 包含Sheet定义类和数据列表的Pair对象数组，用于指定每个Sheet的数据内容 每个Pair对象包含一个Sheet的定义类和一个包含数据的List。
+     *            定义类需要包含注解，用于指定Sheet的名称、列名等信息。
+     * @throws IllegalArgumentException 如果excelSheetDataPairs为空，则抛出此异常
      */
     public static void write(String fileName, HttpServletResponse response, Pair<Class, List>... excelSheetDataPairs) {
         Assert.notEmpty(excelSheetDataPairs);
-        List<ExcelSheetData> excelSheetDataList = getExcelSheetDataList(excelSheetDataPairs);
+        write(fileName, response, getExcelSheetDataList(excelSheetDataPairs));
+    }
+
+    /**
+     * 将Excel数据写入到HTTP响应中。
+     *
+     * @param fileName Excel文件的名称，包括扩展名。
+     * @param response HttpServletResponse对象，用于将生成的Excel文件作为HTTP响应发送给客户端。
+     * @param excelSheetDataList 包含要写入Excel文件的数据的列表。每个元素代表一个Excel工作表的数据。
+     * @throws IllegalArgumentException 如果excelSheetDataList为空，则抛出此异常。
+     */
+    public static void write(String fileName, HttpServletResponse response, List<ExcelSheetData> excelSheetDataList) {
+        Assert.notEmpty(excelSheetDataList);
         ExcelExporter excelExporter = new ExcelExporter();
         excelExporter.exportData(excelSheetDataList, response, fileName);
     }
 
     /**
-     * 将数据写入本地磁盘Excel文件
+     * 将Excel数据写入本地磁盘Excel文件
      *
      * @param filePath Excel文件的路径（本地磁盘路径+文件名）
      * @param excelSheetDataPairs 包含Class和List对的数组，每个对表示一个Excel表格的数据
@@ -114,7 +129,18 @@ public class FoxExcel {
      */
     public static void write(String filePath, Pair<Class, List>... excelSheetDataPairs) {
         Assert.notEmpty(excelSheetDataPairs);
-        List<ExcelSheetData> excelSheetDataList = getExcelSheetDataList(excelSheetDataPairs);
+        write(filePath, getExcelSheetDataList(excelSheetDataPairs));
+    }
+
+    /**
+     * 将Excel数据写入本地磁盘Excel文件
+     *
+     * @param filePath Excel文件的路径（本地磁盘路径+文件名）
+     * @param excelSheetDataList 包含Sheet定义类和数据列表的Pair对象数组，用于指定每个Sheet的数据内容
+     * @throws IllegalArgumentException 如果excelSheetDataList为空，则抛出此异常。
+     */
+    public static void write(String filePath, List<ExcelSheetData> excelSheetDataList) {
+        Assert.notEmpty(excelSheetDataList);
         ExcelExporter excelExporter = new ExcelExporter();
         excelExporter.exportData(excelSheetDataList, filePath);
     }
@@ -128,11 +154,8 @@ public class FoxExcel {
     private static List<ExcelSheetData> getExcelSheetDataList(Pair<Class, List>... excelSheetDataPairs) {
         List<ExcelSheetData> excelSheetDataList = new ArrayList();
         for (Pair pair : excelSheetDataPairs) {
-            ExcelSheetData excelSheetData = new ExcelSheetData();
-            excelSheetData.setSheetDefinition((Class)pair.getKey());
-            excelSheetData.setData(
-                Optional.ofNullable(pair.getValue()).map(v -> (List)v).orElseGet(CollectionUtil::newArrayList));
-            excelSheetDataList.add(excelSheetData);
+            excelSheetDataList.add(new ExcelSheetData().setSheetDefinition((Class)pair.getKey()).setData(
+                    Optional.ofNullable(pair.getValue()).map(v -> (List)v).orElseGet(CollectionUtil::newArrayList)));
         }
         return excelSheetDataList;
     }

@@ -5,6 +5,7 @@ import cn.hutool.core.lang.Pair;
 import com.mamba.excel.dto.JobLogState;
 import com.mamba.excel.dto.PersonDTO;
 import com.mamba.excel.dto.PositionDTO;
+import com.mamba.excel.kit.ExcelSheetData;
 import org.junit.Test;
 
 import java.time.LocalDate;
@@ -25,6 +26,21 @@ public class FoxExcelDiskTest {
         String filePath = "D:\\test.xlsx";
         FoxExcel.write(filePath, Pair.of(PersonDTO.class, getPersonList()),
             Pair.of(PositionDTO.class, getPositionList()));
+        String errorExcelPath = "D:\\error.xlsx";
+        boolean success = FoxExcel.read(filePath, errorExcelPath, PersonDTO.class, PositionDTO.class);
+        if (!success) {
+            System.out.println("导入excel存在异常数据，详看" + errorExcelPath);
+        } else {
+            System.out.println("导入excel成功");
+        }
+    }
+    @Test
+    public void testWriteAndReadSuccessList() {
+        ExcelSheetData<PersonDTO> data1 = new ExcelSheetData<PersonDTO>().setData(getPersonList()).setSheetDefinition(PersonDTO.class);
+        ExcelSheetData<PositionDTO> data2 = new ExcelSheetData<PositionDTO>().setData(getPositionList()).setSheetDefinition(PositionDTO.class);
+        List<ExcelSheetData> excelSheetDataList = ListUtil.of(data1, data2);
+        String filePath = "D:\\test.xlsx";
+        FoxExcel.write(filePath, excelSheetDataList);
         String errorExcelPath = "D:\\error.xlsx";
         boolean success = FoxExcel.read(filePath, errorExcelPath, PersonDTO.class, PositionDTO.class);
         if (!success) {
