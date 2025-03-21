@@ -4,6 +4,7 @@ import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.poi.excel.ExcelWriter;
 import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.util.CellRangeAddressList;
 import org.apache.poi.xssf.usermodel.XSSFRichTextString;
 
 import java.util.List;
@@ -143,5 +144,25 @@ public class ExcelKit {
                 sheet.setColumnWidth(columnNum, columnWidth * 256);
             }
         }
+    }
+
+    /**
+     * 设置下拉列表
+     *
+     * @param sheet Excel表格对象
+     * @param firstRow 下拉列表起始行
+     * @param firstCol 下拉列表起始列
+     * @param lastRow 下拉列表结束行
+     * @param lastCol 下拉列表结束列
+     * @param values 下拉列表选项数组
+     */
+    public static void setDropdownList(Sheet sheet, int firstRow, int firstCol, int lastRow, int lastCol,
+                                       String[] values) {
+        DataValidationHelper validationHelper = sheet.getDataValidationHelper();
+        DataValidationConstraint constraint = validationHelper.createExplicitListConstraint(values);
+        CellRangeAddressList addressList = new CellRangeAddressList(firstRow, lastRow, firstCol, lastCol);
+        DataValidation validation = validationHelper.createValidation(constraint, addressList);
+        validation.setShowErrorBox(true);
+        sheet.addValidationData(validation);
     }
 }

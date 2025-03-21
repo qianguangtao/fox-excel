@@ -195,6 +195,7 @@ public class ExcelImporter {
     private void generateErrorExcelRow(Object originExcelData, int errorDataSize, Map<String, Integer> columnConfigMap,
         Map<String, List<String>> checkResultMap) {
         ExcelWriter writer = this.errorExcelExporter.getWriter();
+        this.errorExcelExporter.fillDropdownRow(columnConfigList, errorDataSize - headerRowNumber);
         this.errorExcelExporter.fillContent(columnConfigList, originExcelData, errorDataSize - headerRowNumber);
         // 根据checkResultMap的key定位列下标，value生成错误提示
         int finalErrorDataSize = errorDataSize;

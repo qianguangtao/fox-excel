@@ -1,5 +1,6 @@
 package com.mamba.excel;
 
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.date.DatePattern;
 import cn.hutool.core.date.DateUtil;
@@ -113,8 +114,55 @@ public class ExcelExporter {
             writer.renameSheet(sheetConfig.getIndex(), sheetConfig.getName());
             // 设置标题
             fillHeader(columnConfigList);
-            fillContent(columnConfigList, excelSheetData.getData());
-            ExcelKit.setAutoSizeColumn(writer.getSheet());
+            if (CollectionUtil.isNotEmpty(excelSheetData.getData())) {
+                fillDropdown(columnConfigList, excelSheetData.getData().size());
+                fillContent(columnConfigList, excelSheetData.getData());
+                ExcelKit.setAutoSizeColumn(writer.getSheet());
+            }
+        }
+    }
+
+    /**
+     * 填充下拉框
+     *
+     * @param columnConfigList 列配置列表
+     * @param dateSize 数据大小
+     */
+    public void fillDropdown(List<ExcelConfig.ColumnConfig> columnConfigList, int dateSize) {
+        for (int i = 0; i < columnConfigList.size(); i++) {
+            ExcelConfig.ColumnConfig columnConfig = columnConfigList.get(i);
+            if (ObjectUtil.isNotNull(columnConfig.getEnumDefinition().getEnumConstants())) {
+                EnumDefinition[] enumConstants = columnConfig.getEnumDefinition().getEnumConstants();
+                String[] enumValues = new String[enumConstants.length];
+                for (int j = 0; j < enumConstants.length; j++) {
+                    String str = Convert.toStr(enumConstants[j].getComment());
+                    enumValues[j] = str;
+                }
+                ExcelKit.setDropdownList(writer.getSheet(), HEADER_ROW_NUMBER, columnConfig.getIndex(),
+                        HEADER_ROW_NUMBER + dateSize - 1, columnConfig.getIndex(), enumValues);
+            }
+        }
+    }
+
+    /**
+     * 导出异常信息，填充下拉框
+     *
+     * @param columnConfigList 列配置列表
+     * @param row 行索引，从0开始计数
+     */
+    public void fillDropdownRow(List<ExcelConfig.ColumnConfig> columnConfigList, int row) {
+        for (int i = 0; i < columnConfigList.size(); i++) {
+            ExcelConfig.ColumnConfig columnConfig = columnConfigList.get(i);
+            if (ObjectUtil.isNotNull(columnConfig.getEnumDefinition().getEnumConstants())) {
+                EnumDefinition[] enumConstants = columnConfig.getEnumDefinition().getEnumConstants();
+                String[] enumValues = new String[enumConstants.length];
+                for (int j = 0; j < enumConstants.length; j++) {
+                    String str = Convert.toStr(enumConstants[j].getComment());
+                    enumValues[j] = str;
+                }
+                ExcelKit.setDropdownList(writer.getSheet(), row + HEADER_ROW_NUMBER, columnConfig.getIndex(),
+                        row + HEADER_ROW_NUMBER, columnConfig.getIndex(), enumValues);
+            }
         }
     }
 

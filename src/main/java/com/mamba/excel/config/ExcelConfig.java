@@ -4,6 +4,7 @@ import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
 import com.mamba.excel.annotation.ExcelColumn;
 import com.mamba.excel.annotation.ExcelSheet;
+import com.mamba.serializer.EnumDefinition;
 import lombok.Builder;
 import lombok.Data;
 
@@ -42,7 +43,7 @@ public class ExcelConfig {
                     throw new IllegalArgumentException("ExcelColumn注解的value和index不能为空");
                 }
                 excelColumnList.add(ColumnConfig.builder().header(c.value()).fieldName(field.getName()).note(c.note())
-                    .index(c.index()).build());
+                        .index(c.index()).enumDefinition(c.enumDefinition()).build());
             }
         }
         if (CollectionUtil.isNotEmpty(excelColumnList)) {
@@ -96,5 +97,7 @@ public class ExcelConfig {
         private String note;
         /** column下标 */
         private Integer index;
+        /** 枚举类型，可选，用来生成单元格下拉框 */
+        private Class<? extends EnumDefinition> enumDefinition;
     }
 }

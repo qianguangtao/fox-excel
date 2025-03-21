@@ -49,7 +49,7 @@ public class PersonDTO {
     @ExcelColumn(value = "更新时间", index = 7)
     private LocalDateTime updateTime;
 
-    @ExcelColumn(value = "测试枚举", index = 8)
+    @ExcelColumn(value = "测试枚举", index = 8, enumDefinition = JobLogState.class)
     @JSONField(serializeUsing = EnumConverter.class, deserializeUsing = EnumConverter.class)
     private JobLogState jobLogState;
 }

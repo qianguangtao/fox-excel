@@ -1,5 +1,7 @@
 package com.mamba.excel.annotation;
 
+import com.mamba.serializer.EnumDefinition;
+
 import java.lang.annotation.*;
 
 /**
@@ -28,4 +30,11 @@ public @interface ExcelColumn {
      * 列下标，必填，从0开始
      */
     int index() default -1;
+
+    /**
+     * 枚举类型，可选，用来生成单元格下拉框
+     *
+     * @return
+     */
+    Class<? extends EnumDefinition> enumDefinition() default EnumDefinition.class;
 }
