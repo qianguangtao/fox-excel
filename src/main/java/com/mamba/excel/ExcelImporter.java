@@ -110,10 +110,13 @@ public class ExcelImporter {
      *
      * @param sheetDefinitionList 表格定义列表，每个元素代表一个表格的类定义
      * @param errorExcelPath 要导出的Excel文件的路径
+     * @param function 用于处理导入结果回调
      */
-    public void importData(List<Class> sheetDefinitionList, String errorExcelPath) {
+    public void importData(List<Class> sheetDefinitionList, String errorExcelPath, BiFunction<ImportResultDTO, ExcelExporter, Boolean> function) {
         importData(sheetDefinitionList);
-        if (hasErrorData) {
+        Boolean sheetCheck = function.apply(importResultDTO, errorExcelExporter);
+        // 如果有异常数据或者自定义的function返回false，则导出异常数据到客户端
+        if (hasErrorData || Boolean.FALSE.equals(sheetCheck)) {
             ExcelKit.setAutoSizeColumn(this.errorExcelExporter.getWriter());
             this.errorExcelExporter.doExport(errorExcelPath);
         }

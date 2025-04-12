@@ -2,6 +2,7 @@ package com.mamba.excel;
 
 import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.lang.Pair;
+import cn.hutool.poi.excel.ExcelWriter;
 import com.mamba.excel.dto.JobLogState;
 import com.mamba.excel.dto.PersonDTO;
 import com.mamba.excel.dto.PositionDTO;
@@ -10,6 +11,7 @@ import org.junit.Test;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -57,6 +59,30 @@ public class FoxExcelDiskTest {
             Pair.of(PositionDTO.class, getErrorPositionList()));
         String errorExcelPath = "D:\\error.xlsx";
         boolean success = FoxExcel.read(filePath, errorExcelPath, PersonDTO.class, PositionDTO.class);
+        if (!success) {
+            System.out.println("导入excel存在异常数据，详看" + errorExcelPath);
+        } else {
+            System.out.println("导入excel成功");
+        }
+    }
+
+    @Test
+    public void testWriteAndReadFailedBiFunction() {
+        String filePath = "D:\\test.xlsx";
+        FoxExcel.write(filePath, Pair.of(PersonDTO.class, getErrorPersonList()),
+            Pair.of(PositionDTO.class, getErrorPositionList()));
+        String errorExcelPath = "D:\\error.xlsx";
+        boolean success = FoxExcel.read(filePath, errorExcelPath, (importResultDTO, errorExcelExporter) -> {
+            System.out.println("导入结果：" + importResultDTO.toString());
+            // 通过errorExcelExporter手动构造错误excel内容
+            ExcelWriter writer = errorExcelExporter.getWriter();
+            writer.setSheet(0);
+            writer.setCurrentRow(1);
+            List<List<Object>> appendData = new ArrayList<>();
+            appendData.add(ListUtil.of("张三", 12, "北京", "001", "1", "2000-01-01", "2000-01-01"));
+            writer.write(appendData);
+            return false;
+        },PersonDTO.class, PositionDTO.class);
         if (!success) {
             System.out.println("导入excel存在异常数据，详看" + errorExcelPath);
         } else {

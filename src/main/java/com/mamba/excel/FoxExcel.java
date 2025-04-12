@@ -93,11 +93,26 @@ public class FoxExcel {
      * @throws IllegalArgumentException 如果文件不存在，则抛出此异常
      */
     public static boolean read(String filePath, String errorExcelPath, Class... sheetDefinition) {
+        return read(filePath, errorExcelPath, DEFAULT_RESULT_FUNCTION, sheetDefinition);
+    }
+
+    /**
+     * 从指定路径的文件中读取数据，并根据提供的Sheet定义类导入数据。 如果存在错误数据，则将其导出到指定的错误Excel文件中。
+     *
+     * @param filePath 文件路径，表示要读取数据的Excel文件位置
+     * @param errorExcelPath 错误Excel文件的路径，如果导入过程中存在错误数据，则会将这些数据导出到这个文件中
+     * @param sheetDefinition Sheet定义类数组，用于指定每个Sheet的类定义
+     * @param function 用于处理导入结果回调
+     * @return 如果导入过程中没有错误数据，则返回true；否则返回false
+     * @throws IllegalArgumentException 如果sheetDefinition为空，则抛出此异常
+     * @throws IllegalArgumentException 如果文件不存在，则抛出此异常
+     */
+    public static boolean read(String filePath, String errorExcelPath, BiFunction<ImportResultDTO, ExcelExporter, Boolean> function, Class... sheetDefinition) {
         Assert.notEmpty(sheetDefinition);
         File file = new File(filePath);
         Assert.notNull(file, "文件不存在");
         ExcelImporter importer = new ExcelImporter(filePath);
-        importer.importData(Arrays.asList(sheetDefinition), errorExcelPath);
+        importer.importData(Arrays.asList(sheetDefinition), errorExcelPath, function);
         return !importer.isHasErrorData();
     }
 
