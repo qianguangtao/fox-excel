@@ -6,6 +6,7 @@ import cn.hutool.core.lang.Pair;
 import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.StrUtil;
 import com.mamba.excel.kit.ExcelSheetData;
+import com.mamba.excel.kit.ImportResultDTO;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
@@ -14,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
 /**
@@ -30,6 +32,11 @@ public class FoxExcel {
     private static final Supplier DEFAULT_SUCCESS = () -> {
         return MapUtil.of("msg", "导入成功");
     };
+    /**
+     * 默认导入结果处理函数，不做任何操作
+     */
+    private static final BiFunction<ImportResultDTO, ExcelExporter, Boolean> DEFAULT_RESULT_FUNCTION = (result, errorExcelExporter) -> {return false;
+    };
 
     /**
      * 从MultipartFile文件中读取数据，并根据提供的Sheet定义类导入数据。 如果存在错误数据，则将其导出到名为"异常-<原始文件名>"的Excel文件中，并返回成功响应。
@@ -39,7 +46,7 @@ public class FoxExcel {
      * @param sheetDefinition Sheet定义类数组，用于指定每个Sheet的类定义
      */
     public static void read(MultipartFile file, HttpServletResponse response, Class... sheetDefinition) {
-        read(file, response, null, DEFAULT_SUCCESS, sheetDefinition);
+        read(file, response, null, DEFAULT_SUCCESS, DEFAULT_RESULT_FUNCTION, sheetDefinition);
 
     }
 
@@ -53,7 +60,7 @@ public class FoxExcel {
      */
     public static void read(MultipartFile file, HttpServletResponse response, String errorExcelName,
                             Class... sheetDefinition) {
-        read(file, response, errorExcelName, DEFAULT_SUCCESS, sheetDefinition);
+        read(file, response, errorExcelName, DEFAULT_SUCCESS, DEFAULT_RESULT_FUNCTION, sheetDefinition);
     }
 
     /**
@@ -64,13 +71,15 @@ public class FoxExcel {
      * @param errorExcelName 错误Excel文件的名称，如果为null或空字符串，则使用默认名称"异常-<原始文件名>"
      * @param success 成功时返回的响应数据提供者
      * @param sheetDefinition Sheet定义类数组，用于指定每个Sheet的类定义
+     * @param function 用于处理导入结果回调
      */
     public static void read(MultipartFile file, HttpServletResponse response, String errorExcelName, Supplier success,
+                            BiFunction<ImportResultDTO, ExcelExporter, Boolean> function,
                             Class... sheetDefinition) {
         Assert.notEmpty(sheetDefinition);
         ExcelImporter importer = new ExcelImporter(file);
         importer.importData(Arrays.asList(sheetDefinition), response,
-                StrUtil.blankToDefault(errorExcelName, "异常-" + file.getOriginalFilename()), success);
+                StrUtil.blankToDefault(errorExcelName, "异常-" + file.getOriginalFilename()), success, function);
     }
 
     /**

@@ -6,10 +6,12 @@ import cn.hutool.poi.excel.ExcelReader;
 import cn.hutool.poi.excel.ExcelUtil;
 import cn.hutool.poi.excel.ExcelWriter;
 import com.alibaba.fastjson.JSON;
+import com.mamba.excel.annotation.ExcelSheet;
 import com.mamba.excel.config.ExcelConfig;
 import com.mamba.excel.handler.AbstractExcelDataHandler;
 import com.mamba.excel.handler.ExcelDataHandlerFactory;
 import com.mamba.excel.kit.ExcelKit;
+import com.mamba.excel.kit.ImportResultDTO;
 import com.mamba.utils.WebUtil;
 import lombok.Getter;
 import lombok.Setter;
@@ -19,6 +21,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.*;
+import java.util.function.BiFunction;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -44,6 +47,9 @@ public class ExcelImporter {
     /** 保存导入excel中的所有数据 */
     @Getter
     private Map<String, List> allDataMap = new HashMap<>();
+    /** 保存导入excel中成功和错误数据的条数 */
+    @Getter
+    private final ImportResultDTO importResultDTO = new ImportResultDTO();
     /** 是否有错误数据 */
     @Getter
     private boolean hasErrorData = false;
@@ -120,11 +126,14 @@ public class ExcelImporter {
      * @param response 响应对象，用于向客户端发送响应
      * @param errorExcelName 导出的异常Excel文件名
      * @param success 无异常数据时候的application/json响应体
+     * @param function 用于处理导入结果回调
      */
     public void importData(List<Class> sheetDefinitionList, HttpServletResponse response, String errorExcelName,
-        Supplier success) {
+        Supplier success, BiFunction<ImportResultDTO, ExcelExporter, Boolean> function) {
         importData(sheetDefinitionList);
-        if (hasErrorData) {
+        Boolean sheetCheck = function.apply(importResultDTO, errorExcelExporter);
+        // 如果有异常数据或者自定义的function返回false，则导出异常数据到客户端
+        if (hasErrorData || Boolean.FALSE.equals(sheetCheck)) {
             ExcelKit.setAutoSizeColumn(this.errorExcelExporter.getWriter());
             this.errorExcelExporter.doExport(response, errorExcelName);
         } else {
@@ -139,6 +148,7 @@ public class ExcelImporter {
      */
     public void importData(List<Class> sheetDefinitionList) {
         for (Class sheetDefinition : sheetDefinitionList) {
+            ExcelSheet excelSheet = (ExcelSheet) sheetDefinition.getAnnotation(ExcelSheet.class);
             AbstractExcelDataHandler excelDataHandler = ExcelDataHandlerFactory.getExcelDataHandler(sheetDefinition);
             sheetConfig = ExcelConfig.getSheetConfig(sheetDefinition);
             columnConfigList = ExcelConfig.getColumnConfig(sheetDefinition);
@@ -147,7 +157,7 @@ public class ExcelImporter {
                     CollectionUtil.defaultIfEmpty(originExcelDataList, Collections.emptyList()));
             generateErrorExcelHeader();
             Map<String, Integer> columnConfigMap = columnConfigList.stream()
-                .collect(Collectors.toMap(ExcelConfig.ColumnConfig::getFieldName, ExcelConfig.ColumnConfig::getIndex));
+                    .collect(Collectors.toMap(ExcelConfig.ColumnConfig::getFieldName, ExcelConfig.ColumnConfig::getIndex));
             if (CollectionUtil.isNotEmpty(originExcelDataList)) {
                 // 有效数据
                 List validDataList = new ArrayList();
@@ -161,6 +171,7 @@ public class ExcelImporter {
                     Map<String, List<String>> checkResultMap = excelDataHandler.checkData(originExcelData, this);
                     if (checkResultMap.size() > 0) {
                         hasErrorData = true;
+                        importResultDTO.setHasErrorData(hasErrorData);
                         errorDataSize++;
                         generateErrorExcelRow(originExcelData, errorDataSize, columnConfigMap, checkResultMap);
                         invalidDataList.add(originExcelData);
@@ -168,8 +179,13 @@ public class ExcelImporter {
                         validDataList.add(excelDataHandler.fillExtraData(originExcelData));
                     }
                 }
+                importResultDTO.getSheetResultList().add(ImportResultDTO.SheetResult.builder().excelSheet(excelSheet)
+                        .validDataList(validDataList).invalidDataList(invalidDataList).build());
                 excelDataHandler.validDataList(validDataList);
                 excelDataHandler.invalidDataList(invalidDataList);
+            } else {
+                importResultDTO.getSheetResultList()
+                        .add(ImportResultDTO.SheetResult.builder().excelSheet(excelSheet).build());
             }
         }
     }
