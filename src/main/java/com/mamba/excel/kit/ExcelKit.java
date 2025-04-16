@@ -43,11 +43,11 @@ public class ExcelKit {
         // 备注的起始行
         anchor.setRow1(row);
         // 备注的结束行
-        anchor.setRow2(row);
+        anchor.setRow2(row + 2);
         // 备注的起始列
         anchor.setCol1(col);
         // 备注的结束列
-        anchor.setCol2(col);
+        anchor.setCol2(col + 2);
         // 创建备注
         Comment comment = drawing.createCellComment(anchor);
         comment.setString(new XSSFRichTextString(note));
